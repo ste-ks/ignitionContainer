@@ -1,0 +1,122 @@
+services:
+# --- GATEWAY SERVER ---
+  ignitionserver:
+    image: inductiveautomation/ignition:8.3.4
+    container_name: ignitionserver
+    hostname: ignitionserver
+    ports:
+      - "9070:8088"
+    # secrets:
+    #   - gateway-password
+    environment:
+      - IGNITION_EDITION=standard
+      # - GATEWAY_ADMIN_USERNAME=admin
+      # - GATEWAY_ADMIN_PASSWORD=${IGNITION_GATEWAY_ADMIN_PASSWORD:-password}
+      # - GATEWAY_ADMIN_PASSWORD_FILE=/run/secrets/gateway-password
+      - ACCEPT_IGNITION_EULA=Y
+      - GATEWAY_MAX_MEMORY=2048
+    networks:
+      - ignitionserver
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+    volumes:
+      - ignitionserver:/usr/local/bin/ignition/data
+      - ./gw-init/ignitionserver.gwbk:/restore.gwbk
+      # Mapeando o arquivo de Identidade (UUID) no caminho do 8.3
+      - ./gw-init/ignitionserver-uuid.txt:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/uuid.txt
+      # Mapeando o arquivo de Criptografia (Keystore) no caminho do 8.3
+      - ./gw-init/ignitionserver-metro-keystore.pfx:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/keystore/metro-keystore.pfx
+    command: >
+      -r /restore.gwbk
+    # 
+    # command: >
+    #   -r /restore.gwbk
+    #   --
+    #   wrapper.java.additional.100=-Dignition.config.mode=Production
+  ignitionclient:
+    image: inductiveautomation/ignition:8.3.4
+    container_name: ignitionclient
+    hostname: ignitionclient
+    ports:
+      - "9071:8088"
+    environment:
+      - IGNITION_EDITION=standard
+      - ACCEPT_IGNITION_EULA=Y
+      - GATEWAY_MAX_MEMORY=2048
+    networks:
+      - ignitionserver
+      - ignitionclient
+    deploy:
+      resources:
+        limits:
+          memory: 2.5G
+    volumes:
+      - ignitionclient:/usr/local/bin/ignition/data
+      - ./gw-init/ignitionclient.gwbk:/restore.gwbk
+      # Mapeando o arquivo de Identidade (UUID) no caminho do 8.3
+      - ./gw-init/ignitionclient-uuid.txt:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/uuid.txt
+      # Mapeando o arquivo de Criptografia (Keystore) no caminho do 8.3
+      - ./gw-init/ignitionclient-metro-keystore.pfx:/usr/local/bin/ignition/data/config/local/ignition/gateway-network/keystore/metro-keystore.pfx
+    command: >
+      -r /restore.gwbk
+  # --- BANCO DE DADOS 1 (MARIADB) ---
+  db:
+    image: mariadb:latest
+    container_name: some-mariadb
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MARIADB_ROOT_PASSWORD=ignition
+      - MARIADB_DATABASE=ignition
+      - MARIADB_USER=ignition
+      - MARIADB_PASSWORD=ignition
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      ignitionserver:
+        aliases:
+          - main-db
+# --- BANCO DE DADOS 2 (MYSQL) ---
+  mysql:
+    image: mysql:latest
+    container_name: some-mysql
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=ignition
+      - MYSQL_DATABASE=ignition
+      - MYSQL_USER=ignition
+      - MYSQL_PASSWORD=ignition
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      ignitionserver:
+        aliases:
+          - second-db
+  smtp:
+    image: dockage/mailcatcher:0.9.0
+    container_name: mail-smtp
+    ports:
+      # HTTP Port (Graphic interface where Ignition reads and displays emails via browser)
+      - 1080:1080
+      # SMTP Port (IGNITION send e-mails)
+      - 1025:1025
+    networks:
+      ignitionserver:
+        aliases:
+          - mail-server
+# secrets:
+#   gateway-password:
+    # file: ./secrets/GATEWAY_PASSWORD
+networks:
+  ignitionserver:
+  ignitionclient:
+volumes:
+  ignitionserver:
+  ignitionclient:
+  mariadb-data:
+  mysql-data:

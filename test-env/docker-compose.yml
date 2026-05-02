@@ -1,0 +1,71 @@
+services:
+  frontend:
+    image: inductiveautomation/ignition:8.1.21
+    hostname: frontend
+    ports:
+      - 9988:8088
+    volumes:
+      - frontend-data:/usr/local/bin/ignition/data
+      - ./gw-init/frontend.gwbk:/restore.gwbk
+      - ./gw-init/frontend-uuid.txt:/usr/local/bin/ignition/data/.uuid
+      - ./gw-init/frontend-metro-keystore:/usr/local/bin/ignition/data/local/metro-keystore
+    networks:
+      - frontend
+    environment:
+      - IGNITION_EDITION=standard
+      - GATEWAY_ADMIN_PASSWORD=password
+      - ACCEPT_IGNITION_EULA=Y
+    command: >
+      -n frontend-gateway
+      -r /restore.gwbk
+  backend:
+    image: inductiveautomation/ignition:8.1.21
+    hostname: backend
+    ports:
+      - 9989:8088
+    volumes:
+      - backend-data:/usr/local/bin/ignition/data
+      - ./gw-init/backend.gwbk:/restore.gwbk
+      - ./gw-init/backend-uuid.txt:/usr/local/bin/ignition/data/.uuid
+      - ./gw-init/backend-metro-keystore:/usr/local/bin/ignition/data/local/metro-keystore
+    networks:
+      - frontend
+      - backend
+    environment:
+      - IGNITION_EDITION=standard
+      - GATEWAY_ADMIN_PASSWORD=password
+      - ACCEPT_IGNITION_EULA=Y
+    command: >
+      -n backend-gateway
+      -r /restore.gwbk
+  db:
+    image: mariadb:10.10.2
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      backend:
+        aliases:
+          - main-db
+    environment:
+      - MARIADB_ROOT_PASSWORD=ignition
+      - MARIADB_DATABASE=ignition
+      - MARIADB_USER=ignition
+      - MARIADB_PASSWORD=ignition
+  smtp:
+    image: dockage/mailcatcher:0.8.2
+    ports:
+      - 1080:1080
+      - 1025:1025
+    networks:
+      backend:
+        aliases:
+          - mail-server
+networks:
+  frontend:
+  backend:
+volumes:
+  frontend-data:
+  backend-data:
+  db-data:
