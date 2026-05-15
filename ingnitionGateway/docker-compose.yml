@@ -3,6 +3,7 @@ services:
   ignitionserver:
     image: inductiveautomation/ignition:8.3.4
     container_name: ignitionserver
+    restart: always
     hostname: ignitionserver
     ports:
       - "9070:8088"
@@ -38,6 +39,7 @@ services:
   ignitionclient:
     image: inductiveautomation/ignition:8.3.4
     container_name: ignitionclient
+    restart: always
     hostname: ignitionclient
     ports:
       - "9071:8088"
@@ -79,6 +81,7 @@ services:
       ignitionserver:
         aliases:
           - main-db
+#
 # --- BANCO DE DADOS 2 (MYSQL) ---
   mysql:
     image: mysql:latest
@@ -100,6 +103,7 @@ services:
   smtp:
     image: dockage/mailcatcher:0.9.0
     container_name: mail-smtp
+    restart: always
     ports:
       # HTTP Port (Graphic interface where Ignition reads and displays emails via browser)
       - 1080:1080
