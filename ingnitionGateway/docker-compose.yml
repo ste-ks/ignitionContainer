@@ -3,7 +3,7 @@ services:
   ignitionserver:
     image: inductiveautomation/ignition:8.3.4
     container_name: ignitionserver
-    restart: always
+    # restart: always
     hostname: ignitionserver
     ports:
       - "9070:8088"
@@ -39,7 +39,7 @@ services:
   ignitionclient:
     image: inductiveautomation/ignition:8.3.4
     container_name: ignitionclient
-    restart: always
+    # restart: always
     hostname: ignitionclient
     ports:
       - "9071:8088"
@@ -67,7 +67,7 @@ services:
   db:
     image: mariadb:latest
     container_name: some-mariadb
-    restart: always
+    # restart: always
     ports:
       - 3306:3306
     environment:
@@ -86,7 +86,7 @@ services:
   mysql:
     image: mysql:latest
     container_name: some-mysql
-    restart: always
+    # restart: always
     ports:
       - "3307:3306"
     environment:
@@ -103,7 +103,7 @@ services:
   smtp:
     image: dockage/mailcatcher:0.9.0
     container_name: mail-smtp
-    restart: always
+    # restart: always
     ports:
       # HTTP Port (Graphic interface where Ignition reads and displays emails via browser)
       - 1080:1080
