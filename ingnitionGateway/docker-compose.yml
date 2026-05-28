@@ -10,6 +10,8 @@ services:
     # secrets:
     #   - gateway-password
     environment:
+      - TZ=America/Sao_Paulo
+      - GATEWAY_JVM_ARGS=-Duser.timezone=America/Sao_Paulo
       - IGNITION_EDITION=standard
       # - GATEWAY_ADMIN_USERNAME=admin
       # - GATEWAY_ADMIN_PASSWORD=${IGNITION_GATEWAY_ADMIN_PASSWORD:-password}
@@ -44,6 +46,8 @@ services:
     ports:
       - "9071:8088"
     environment:
+      - TZ=America/Sao_Paulo
+      - GATEWAY_JVM_ARGS=-Duser.timezone=America/Sao_Paulo
       - IGNITION_EDITION=standard
       - ACCEPT_IGNITION_EULA=Y
       - GATEWAY_MAX_MEMORY=2048
